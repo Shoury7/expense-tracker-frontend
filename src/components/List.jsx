@@ -3,7 +3,8 @@ import { FiPlus } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import ExpenseCard from "./ExpenseCard";
-
+import Loader from "./Loader";
+import { toast } from "react-toastify";
 const List = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [expenses, setExpenses] = useState([]);
@@ -82,12 +83,13 @@ const List = () => {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        toast.success("Expense delete successfully!");
         fetchExpenses(); // ✅ Now works because it's defined outside
       } else {
-        alert(data.message || "Failed to delete expense");
+        toast.error(data.message || "Failed to delete expense");
       }
     } catch (err) {
-      console.error("Delete error:", err);
+      toast.error("Delete error:" + err);
     }
   };
 
@@ -105,7 +107,7 @@ const List = () => {
             </p>
             <button
               onClick={() => navigate("/login")}
-              className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-lg hover:from-blue-600 hover:to-indigo-700 transition transform hover:-translate-y-0.5 hover:scale-105"
+              className="cursor-pointer px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-lg hover:from-blue-600 hover:to-indigo-700 transition transform hover:-translate-y-0.5 hover:scale-105"
             >
               Go to Login
             </button>
@@ -123,7 +125,7 @@ const List = () => {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <button
             onClick={() => navigate("/newExpense")}
-            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-green-400 to-green-500 text-gray-900 font-semibold shadow-lg hover:from-green-300 hover:to-green-400 transition transform hover:-translate-y-0.5 hover:scale-105"
+            className="cursor-pointer flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-green-400 to-green-500 text-gray-900 font-semibold shadow-lg hover:from-green-300 hover:to-green-400 transition transform hover:-translate-y-0.5 hover:scale-105"
           >
             <FiPlus className="text-lg" /> Add Expense
           </button>
@@ -190,7 +192,7 @@ const List = () => {
 
         {/* Expense Cards */}
         {loading ? (
-          <p className="text-gray-300">Loading...</p>
+          <Loader />
         ) : expenses.length === 0 ? (
           <p className="text-gray-300">No expenses found.</p>
         ) : (

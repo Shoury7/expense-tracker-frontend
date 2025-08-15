@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
-
+import { FiArrowLeft } from "react-icons/fi";
+import { toast } from "react-toastify";
 const NewExpense = () => {
   const [formData, setFormData] = useState({
     title: "",
@@ -58,16 +59,17 @@ const NewExpense = () => {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setMessage("✅ Expense created successfully!");
+        toast.success("Expense created successfully!");
         setTimeout(() => {
           navigate("/"); // Go back to list page
         }, 1000);
       } else {
         setMessage(data.message || "Something went wrong!");
+        toast.error(data.message || "Something went wrong!");
       }
     } catch (err) {
-      console.error(err);
       setMessage("Server error!");
+      toast.error("Server error!");
     }
   };
 
@@ -76,6 +78,12 @@ const NewExpense = () => {
       <Header />
       <div className="min-h-screen bg-slate-800 text-white flex flex-col items-center pt-10 p-4">
         <div className="bg-slate-700 p-8 rounded-lg shadow-lg w-full max-w-md">
+          <button
+            onClick={() => navigate("/")}
+            className="mb-4 flex items-center gap-1 px-4 py-2 bg-gray-400 text-gray-900 font-medium rounded-lg hover:bg-gray-300 transition"
+          >
+            <FiArrowLeft /> Back
+          </button>
           <h2 className="text-2xl font-bold mb-6">Add New Expense</h2>
           {message && <p className="mb-4 text-center">{message}</p>}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

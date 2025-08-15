@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
+import { toast } from "react-toastify";
+
 import Header from "./Header";
 
 const UpdateExpense = () => {
@@ -43,13 +45,13 @@ const UpdateExpense = () => {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        alert("Expense updated successfully!");
-        navigate("/list");
+        toast.success("Expense updated successfully!");
+        navigate("/");
       } else {
-        alert(data.message || "Failed to update expense");
+        toast.error(data.message || "Failed to update expense");
       }
     } catch (err) {
-      console.error("Update error:", err);
+      toast.error("Update error:" + err);
     }
   };
 

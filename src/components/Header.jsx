@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-
+import { useNavigate } from "react-router-dom";
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  const navigate = useNavigate();
   // Function to validate token (simple check here; backend can be added for real validation)
   const checkToken = () => {
     const token = localStorage.getItem("token");
@@ -29,7 +29,10 @@ const Header = () => {
     <header className="bg-[#0F172A] shadow-md border-b border-gray-700">
       <div className="container mx-auto flex justify-between items-center py-4 px-6">
         {/* Logo / App Name */}
-        <h1 className="text-[#F8FAFC] text-2xl font-bold tracking-wide">
+        <h1
+          className="text-[#F8FAFC] text-2xl font-bold tracking-wide cursor-pointer hover:text-gray-300 transition"
+          onClick={() => navigate("/")}
+        >
           Expense Tracker
         </h1>
 
@@ -38,14 +41,14 @@ const Header = () => {
           {!isLoggedIn ? (
             <a
               href="/login"
-              className="px-5 py-2 rounded-full bg-[#3B82F6] text-[#F8FAFC] font-semibold shadow-md hover:bg-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
+              className="cursor-pointer px-5 py-2 rounded-full bg-[#3B82F6] text-[#F8FAFC] font-semibold shadow-md hover:bg-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
             >
               Login
             </a>
           ) : (
             <button
               onClick={handleLogout}
-              className="px-5 py-2 rounded-full bg-[#EF4444] text-[#F8FAFC] font-semibold shadow-md hover:bg-red-500 transition transform hover:-translate-y-0.5 hover:scale-105"
+              className="cursor-pointer px-5 py-2 rounded-full bg-[#EF4444] text-[#F8FAFC] font-semibold shadow-md hover:bg-red-500 transition transform hover:-translate-y-0.5 hover:scale-105"
             >
               Logout
             </button>
