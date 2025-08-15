@@ -66,6 +66,20 @@ const Login = () => {
           <h2 className="text-2xl font-bold mb-6">
             {isRegister ? "Register" : "Login"}
           </h2>
+
+          {/* 🔹 Predefined credentials note */}
+          {!isRegister && (
+            <div className="bg-[#334155] p-4 rounded mb-4 text-[#F8FAFC] border-l-4 border-[#3B82F6]">
+              <p className="font-semibold mb-1">Test Credentials:</p>
+              <p>
+                Email: <span className="font-mono">user@gmail.com</span>
+              </p>
+              <p>
+                Password: <span className="font-mono">user@123</span>
+              </p>
+            </div>
+          )}
+
           {message && <p className="mb-4 text-[#F8FAFC]">{message}</p>}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
