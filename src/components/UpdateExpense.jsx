@@ -4,6 +4,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { toast } from "react-toastify";
 
 import Header from "./Header";
+import Footer from "./Footer";
 
 const UpdateExpense = () => {
   const navigate = useNavigate();
@@ -129,6 +130,7 @@ const UpdateExpense = () => {
           </form>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import Header from "./Header";
 import ExpenseCard from "./ExpenseCard";
 import Loader from "./Loader";
 import { toast } from "react-toastify";
+import Footer from "./Footer";
 const List = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [expenses, setExpenses] = useState([]);
@@ -233,6 +234,7 @@ const List = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

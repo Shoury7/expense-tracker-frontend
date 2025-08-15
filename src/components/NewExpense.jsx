@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import { FiArrowLeft } from "react-icons/fi";
 import { toast } from "react-toastify";
+import Footer from "./Footer";
 const NewExpense = () => {
   const [formData, setFormData] = useState({
     title: "",
@@ -150,6 +151,7 @@ const NewExpense = () => {
           </form>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
