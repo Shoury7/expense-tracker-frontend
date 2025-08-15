@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { FiPlus } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import ExpenseCard from "./ExpenseCard";
@@ -24,42 +25,71 @@ const List = () => {
     setIsLoggedIn(!!token);
   }, []);
 
-  // Fetch expenses
+  // ✅ Reusable fetch function
+  const fetchExpenses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      let url = `https://expense-tracker-backend-jot4.onrender.com/api/expense/query?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`;
+
+      if (category) url += `&category=${category}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setExpenses(data.data);
+        setTotalPages(data.totalPages || 0);
+      } else {
+        console.error("Error fetching expenses:", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching expenses:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, limit, category, sortBy, order, search]);
+
+  // Fetch on dependency change
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (isLoggedIn) {
+      fetchExpenses();
+    }
+  }, [isLoggedIn, fetchExpenses]);
 
-    const fetchExpenses = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        let url = `https://expense-tracker-backend-jot4.onrender.com/api/expense/query?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`;
+  // ✅ Handle delete and re-fetch
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this expense?"))
+      return;
 
-        if (category) url += `&category=${category}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-
-        const res = await fetch(url, {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `https://expense-tracker-backend-jot4.onrender.com/api/expense/${id}`,
+        {
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.success) {
-          setExpenses(data.data);
-          setTotalPages(data.totalPages || 0);
-        } else {
-          console.error("Error fetching expenses:", data.message);
         }
-      } catch (err) {
-        console.error("Error fetching expenses:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
 
-    fetchExpenses();
-  }, [isLoggedIn, page, limit, category, sortBy, order, search]);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        fetchExpenses(); // ✅ Now works because it's defined outside
+      } else {
+        alert(data.message || "Failed to delete expense");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
 
   if (!isLoggedIn) {
     return (
@@ -71,7 +101,7 @@ const List = () => {
               You’re not logged in
             </h2>
             <p className="text-gray-300 mb-6">
-              Please log in to continue and see your lists.
+              Please log in to continue and see your expenses.
             </p>
             <button
               onClick={() => navigate("/login")}
@@ -89,11 +119,18 @@ const List = () => {
     <div>
       <Header />
       <div className="p-6 text-white bg-slate-800 min-h-screen">
-        <h1 className="text-3xl font-bold mb-6">Lists</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <button
+            onClick={() => navigate("/newExpense")}
+            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-green-400 to-green-500 text-gray-900 font-semibold shadow-lg hover:from-green-300 hover:to-green-400 transition transform hover:-translate-y-0.5 hover:scale-105"
+          >
+            <FiPlus className="text-lg" /> Add Expense
+          </button>
+        </div>
 
         {/* Filter Controls */}
         <div className="bg-slate-700 p-4 rounded-lg shadow-lg flex flex-wrap gap-4 items-center mb-6">
-          {/* Search */}
           <input
             type="text"
             placeholder="Search..."
@@ -104,8 +141,6 @@ const List = () => {
             }}
             className="p-2 rounded bg-slate-900 text-white placeholder-gray-400 border border-gray-600 flex-1 min-w-[180px] focus:ring-2 focus:ring-blue-500 outline-none"
           />
-
-          {/* Category dropdown */}
           <select
             value={category}
             onChange={(e) => {
@@ -122,8 +157,6 @@ const List = () => {
             <option value="Entertainment">Entertainment</option>
             <option value="Other">Other</option>
           </select>
-
-          {/* Sort By dropdown */}
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -133,8 +166,6 @@ const List = () => {
             <option value="amount">Sort by Amount</option>
             <option value="totalWithTax">Sort by Total with Tax</option>
           </select>
-
-          {/* Order dropdown */}
           <select
             value={order}
             onChange={(e) => setOrder(e.target.value)}
@@ -143,8 +174,6 @@ const List = () => {
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
-
-          {/* Limit */}
           <select
             value={limit}
             onChange={(e) => {
@@ -167,7 +196,14 @@ const List = () => {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {expenses.map((exp) => (
-              <ExpenseCard key={exp._id} expense={exp} />
+              <ExpenseCard
+                key={exp._id}
+                expense={exp}
+                onDelete={handleDelete}
+                onUpdate={(expense) =>
+                  navigate("/updateExpense", { state: { expense } })
+                }
+              />
             ))}
           </div>
         )}
