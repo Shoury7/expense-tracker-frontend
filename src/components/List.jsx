@@ -5,9 +5,8 @@ import ExpenseCard from "./ExpenseCard";
 
 const List = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Table data (empty for now)
-  const [expenses] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -16,7 +15,7 @@ const List = () => {
   const [order, setOrder] = useState("desc");
   const [limit, setLimit] = useState(5);
   const [page, setPage] = useState(1);
-  const [totalPages] = useState(0); // placeholder
+  const [totalPages, setTotalPages] = useState(0);
 
   const navigate = useNavigate();
 
@@ -24,6 +23,43 @@ const List = () => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
+
+  // Fetch expenses
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const fetchExpenses = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        let url = `https://expense-tracker-backend-jot4.onrender.com/api/expense/query?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`;
+
+        if (category) url += `&category=${category}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          setExpenses(data.data);
+          setTotalPages(data.totalPages || 0);
+        } else {
+          console.error("Error fetching expenses:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching expenses:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExpenses();
+  }, [isLoggedIn, page, limit, category, sortBy, order, search]);
 
   if (!isLoggedIn) {
     return (
@@ -124,7 +160,9 @@ const List = () => {
         </div>
 
         {/* Expense Cards */}
-        {expenses.length === 0 ? (
+        {loading ? (
+          <p className="text-gray-300">Loading...</p>
+        ) : expenses.length === 0 ? (
           <p className="text-gray-300">No expenses found.</p>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
