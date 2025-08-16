@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
+import Loader from "./Loader"; // import Loader component
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -11,9 +12,10 @@ const Login = () => {
     password: "",
   });
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false); // 🔹 Loading state
   const navigate = useNavigate();
 
-  // 🔹 Redirect if already logged in
+  // Redirect if already logged in
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -27,6 +29,9 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // 🔹 Show loader
+    setMessage("");
+
     try {
       const url = isRegister
         ? "https://expense-tracker-backend-jot4.onrender.com/api/auth/signup"
@@ -39,6 +44,7 @@ const Login = () => {
       });
 
       const data = await res.json();
+      setLoading(false); // 🔹 Hide loader after response
 
       if (res.ok) {
         if (!isRegister) {
@@ -56,6 +62,7 @@ const Login = () => {
     } catch (error) {
       console.error(error);
       setMessage("Server error!");
+      setLoading(false); // 🔹 Hide loader on error
     }
   };
 
@@ -68,7 +75,6 @@ const Login = () => {
             {isRegister ? "Register" : "Login"}
           </h2>
 
-          {/* 🔹 Predefined credentials note */}
           {!isRegister && (
             <div className="bg-[#334155] p-4 rounded mb-4 text-[#F8FAFC] border-l-4 border-[#3B82F6]">
               <p className="font-semibold mb-1">Test Credentials:</p>
@@ -83,43 +89,48 @@ const Login = () => {
 
           {message && <p className="mb-4 text-[#F8FAFC]">{message}</p>}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {isRegister && (
+          {/* 🔹 Show loader if loading */}
+          {loading ? (
+            <Loader />
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {isRegister && (
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="p-2 rounded bg-[#0F172A] text-[#F8FAFC] placeholder-[#94A3B8] border border-gray-700"
+                  required
+                />
+              )}
               <input
-                type="text"
-                name="name"
-                placeholder="Name"
-                value={formData.name}
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
                 onChange={handleChange}
                 className="p-2 rounded bg-[#0F172A] text-[#F8FAFC] placeholder-[#94A3B8] border border-gray-700"
                 required
               />
-            )}
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              className="p-2 rounded bg-[#0F172A] text-[#F8FAFC] placeholder-[#94A3B8] border border-gray-700"
-              required
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className="p-2 rounded bg-[#0F172A] text-[#F8FAFC] placeholder-[#94A3B8] border border-gray-700"
-              required
-            />
-            <button
-              type="submit"
-              className="mt-4 px-5 py-2 rounded-full bg-[#3B82F6] text-[#F8FAFC] font-semibold shadow-md hover:bg-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
-            >
-              {isRegister ? "Register" : "Login"}
-            </button>
-          </form>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className="p-2 rounded bg-[#0F172A] text-[#F8FAFC] placeholder-[#94A3B8] border border-gray-700"
+                required
+              />
+              <button
+                type="submit"
+                className="mt-4 px-5 py-2 rounded-full bg-[#3B82F6] text-[#F8FAFC] font-semibold shadow-md hover:bg-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
+              >
+                {isRegister ? "Register" : "Login"}
+              </button>
+            </form>
+          )}
 
           <p className="mt-4 text-[#94A3B8] text-center">
             {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
